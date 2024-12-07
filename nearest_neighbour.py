@@ -35,7 +35,8 @@ def learnknn(k: int, x_train: np.array, y_train: np.array):
     :param y_train: numpy array of size (m, 1) containing the labels of the training sample
     :return: classifier data structure
     """
-    raise NotImplementedError()
+    classifier = {'k_value' : k, 'x_train' : x_train, 'y_train' : y_train} # a dictionary with the rellevant data
+    return classifier
 
 def predictknn(classifier, x_test: np.array):
     """
@@ -44,7 +45,26 @@ def predictknn(classifier, x_test: np.array):
     :param x_test: numpy array of size (n, d) containing test examples that will be classified
     :return: numpy array of size (n, 1) classifying the examples in x_test
     """
-    raise NotImplementedError()
+    k_val = classifier['k_value']
+    x_train = classifier['x_train']
+    y_train = classifier['y_train']
+
+    predictions = []
+    for xi in x_test:
+        distances = [distance.euclidean(xi, xj) for xj in x_train]
+        closet_indices = np.argsort(distances)
+        k_nearest = closet_indices[:k_val]
+        k_labels = y_train[k_nearest].astype(int)
+        predicted_label = np.bincount(k_labels).argmax()
+        predictions.append(predicted_label)
+    return np.array(predictions).reshape(-1, 1)
+
+
+    
+
+
+
+
 
 
 def simple_test():
@@ -80,9 +100,26 @@ def simple_test():
     print(f"The {i}'th test sample was classified as {preds[i]}")
 
 
+def mytest():
+    k = 1
+    x_train = np.array([[1,2], [3,4], [5,6]])
+    y_train = np.array([1, 0, 1])
+    classifier = learnknn(k, x_train, y_train)
+    x_test = np.array([[10,11], [3.1,4.2], [2.9,4.2], [5,6]])
+    y_testprediction = predictknn(classifier, x_test)
+    print(y_testprediction)
+
 if __name__ == '__main__':
 
     # before submitting, make sure that the function simple_test runs without errors
     simple_test()
+
+    
+    mytest()
+    # for i in range(5):
+
+    #     np.random.seed(i)
+
+    #     simple_test()
 
 
