@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.spatial import distance
+import matplotlib.pyplot as plt
 
 
 def gensmallm(x_list: list, y_list: list, m: int):
@@ -109,17 +110,91 @@ def mytest():
     y_testprediction = predictknn(classifier, x_test)
     print(y_testprediction)
 
+def task2():
+    sampel_sizes = [1,10,25,50,75,100]
+    k =1
+    data = np.load('mnist_all.npz')
+
+    train2 = data['train2']
+    train3 = data['train3']
+    train5 = data['train5']
+    train6 = data['train6']
+
+    test2 = data['test2']
+    test3 = data['test3']
+    test5 = data['test5']
+    test6 = data['test6']
+
+    average_errors = []
+    min_errors = []
+    max_errors = []
+
+    for sampel_size in sampel_sizes:
+        sampel_size_errors = []
+
+        print(f"sample size is {sampel_size}")
+        for i in range(10):
+
+            x_train, y_train = gensmallm([train2, train3, train5, train6], [2, 3, 5, 6], sampel_size)
+
+            x_test, y_test = gensmallm([test2, test3, test5, test6], [2, 3, 5, 6], sampel_size)
+            y_test = y_test.reshape(-1,1).astype(int)
+
+            classifer = learnknn(k, x_train, y_train)
+
+            preds = predictknn(classifer, x_test)
+            error = np.mean(y_test != preds)
+            sampel_size_errors.append(error)
+
+        average_errors.append(np.mean(sampel_size_errors))
+
+        min_error = np.min(sampel_size_errors)
+        max_error = np.max(sampel_size_errors)
+        min_errors.append(min_error)
+        max_errors.append(max_error)
+        print(f"Average error: {np.mean(sampel_size_errors)}, Min error: {min_error}, Max error: {max_error}")
+
+    plt.errorbar(
+    sampel_sizes,
+    average_errors,
+    yerr=[np.array(average_errors) - np.array(min_errors), np.array(max_errors) - np.array(average_errors)],
+    fmt='o-',
+    capsize=5,
+    label='average test error with range of error')
+
+    plt.xlabel('Training Sample Size')  
+    plt.ylabel('Average Test Error')  
+    plt.title('Errors Plot')  
+    plt.grid(True) 
+    plt.legend()
+    plt.show()
+
+
+    # plt.plot(sampel_sizes, average_errors, marker='o')
+    # plt.xlabel('Training Sample Size')  
+    # plt.ylabel('Average Test Error')  
+
+    # # Add a title
+    # plt.title('Errors Plot')  
+    # plt.grid(True) 
+    # plt.show()
+    
+    
+
+
 if __name__ == '__main__':
 
     # before submitting, make sure that the function simple_test runs without errors
-    simple_test()
+    # simple_test()
 
-    
-    mytest()
+
+    # mytest()
     # for i in range(5):
 
     #     np.random.seed(i)
 
     #     simple_test()
+
+    task2()
 
 
