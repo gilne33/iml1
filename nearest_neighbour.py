@@ -1,3 +1,4 @@
+import random
 import numpy as np
 from scipy.spatial import distance
 import matplotlib.pyplot as plt
@@ -27,7 +28,7 @@ def gensmallm(x_list: list, y_list: list, m: int):
 
 
 # todo: complete the following functions, you may add auxiliary functions or define class to help you
-
+#task1
 def learnknn(k: int, x_train: np.array, y_train: np.array):
     """
 
@@ -36,7 +37,7 @@ def learnknn(k: int, x_train: np.array, y_train: np.array):
     :param y_train: numpy array of size (m, 1) containing the labels of the training sample
     :return: classifier data structure
     """
-    classifier = {'k_value' : k, 'x_train' : x_train, 'y_train' : y_train} # a dictionary with the rellevant data
+    classifier = {'k_value' : k, 'x_train' : x_train, 'y_train' : y_train} 
     return classifier
 
 def predictknn(classifier, x_test: np.array):
@@ -59,14 +60,6 @@ def predictknn(classifier, x_test: np.array):
         predicted_label = np.bincount(k_labels).argmax()
         predictions.append(predicted_label)
     return np.array(predictions).reshape(-1, 1)
-
-
-    
-
-
-
-
-
 
 def simple_test():
     data = np.load('mnist_all.npz')
@@ -91,8 +84,7 @@ def simple_test():
 
     # tests to make sure the output is of the intended class and shape
     assert isinstance(preds, np.ndarray), "The output of the function predictknn should be a numpy array"
-    assert preds.shape[0] == x_test.shape[0] and preds.shape[
-        1] == 1, f"The shape of the output should be ({x_test.shape[0]}, 1)"
+    assert preds.shape[0] == x_test.shape[0] and preds.shape[1] == 1, f"The shape of the output should be ({x_test.shape[0]}, 1)"
 
     # get a random example from the test set
     i = np.random.randint(0, x_test.shape[0])
@@ -101,7 +93,7 @@ def simple_test():
     print(f"The {i}'th test sample was classified as {preds[i]}")
 
 
-def mytest():
+def exampe_test():
     k = 1
     x_train = np.array([[1,2], [3,4], [5,6]])
     y_train = np.array([1, 0, 1])
@@ -110,11 +102,15 @@ def mytest():
     y_testprediction = predictknn(classifier, x_test)
     print(y_testprediction)
 
-def task2():
-    sampel_sizes = [1,10,25,50,75,100]
-    k =1
-    data = np.load('mnist_all.npz')
 
+#task2
+def task2a():
+    #hyperparameters (as per the task)
+    k =1
+    sampel_sizes = [1,10,25,50,75,100]
+
+    #data loading
+    data = np.load('mnist_all.npz')
     train2 = data['train2']
     train3 = data['train3']
     train5 = data['train5']
@@ -125,9 +121,11 @@ def task2():
     test5 = data['test5']
     test6 = data['test6']
 
+    #lists for the plots
     average_errors = []
     min_errors = []
     max_errors = []
+
 
     for sampel_size in sampel_sizes:
         sampel_size_errors = []
@@ -160,24 +158,129 @@ def task2():
     yerr=[np.array(average_errors) - np.array(min_errors), np.array(max_errors) - np.array(average_errors)],
     fmt='o-',
     capsize=5,
-    label='average test error with range of error')
+    label='average test error with range of  min and max errors')
 
     plt.xlabel('Training Sample Size')  
-    plt.ylabel('Average Test Error')  
-    plt.title('Errors Plot')  
+    plt.ylabel('Test Error Average')  
+    plt.title('Errors Plot Over Sample Size')  
     plt.grid(True) 
     plt.legend()
     plt.show()
 
 
-    # plt.plot(sampel_sizes, average_errors, marker='o')
-    # plt.xlabel('Training Sample Size')  
-    # plt.ylabel('Average Test Error')  
 
-    # # Add a title
-    # plt.title('Errors Plot')  
-    # plt.grid(True) 
-    # plt.show()
+def task2d():
+    #hyperparameters (as per the task)
+    sampel_size = 200
+    k_list = [k for k in range(1,12)] #list of the desired k values (1-11)
+
+    #data loading
+    data = np.load('mnist_all.npz')
+    train2 = data['train2']
+    train3 = data['train3']
+    train5 = data['train5']
+    train6 = data['train6']
+
+    test2 = data['test2']
+    test3 = data['test3']
+    test5 = data['test5']
+    test6 = data['test6']
+
+    average_errors = []
+
+    for k in k_list:
+        k_errors = []
+
+        print(f"k size is {k}")
+        for i in range(10):
+
+            x_train, y_train = gensmallm([train2, train3, train5, train6], [2, 3, 5, 6], sampel_size)
+
+            x_test, y_test = gensmallm([test2, test3, test5, test6], [2, 3, 5, 6], sampel_size)
+            y_test = y_test.reshape(-1,1).astype(int)
+
+            classifer = learnknn(k, x_train, y_train)
+            preds = predictknn(classifer, x_test)
+
+            error = np.mean(y_test != preds)
+            k_errors.append(error)
+            
+        average_errors.append(np.mean(k_errors))
+        print(f"Average error: {np.mean(np.mean(k_errors))}")
+
+    plt.plot(k_list, average_errors, marker='o')
+    plt.xlabel('K')  
+    plt.ylabel('Test Error Average')  
+
+    plt.title('Errors Plot Over K')  
+    plt.grid(True) 
+    plt.show()
+
+
+#function to corrupt the data
+def corrupt_labels(y):
+    m = len(y)
+    n_corrupt = int(m * 0.3)
+
+    corrupt_indices = np.random.choice(m, n_corrupt, replace=False)
+    
+    for i in corrupt_indices:
+        original_label = y[i]
+        possible_labels = [label for label in range(4) if label != original_label]
+        y[i] = random.choice(possible_labels)
+    
+
+
+def task2e():
+    #hyperparameters (as per the task)
+    sampel_size = 200
+    k_list = [k for k in range(1,12)]
+
+    #data loading
+    data = np.load('mnist_all.npz')
+    train2 = data['train2']
+    train3 = data['train3']
+    train5 = data['train5']
+    train6 = data['train6']
+
+    test2 = data['test2']
+    test3 = data['test3']
+    test5 = data['test5']
+    test6 = data['test6']
+
+    average_errors = []
+
+    for k in k_list:
+        k_errors = []
+
+        print(f"k size is {k}")
+        for i in range(10):
+
+            x_train, y_train = gensmallm([train2, train3, train5, train6], [2, 3, 5, 6], sampel_size)
+
+            x_test, y_test = gensmallm([test2, test3, test5, test6], [2, 3, 5, 6], sampel_size)
+
+            corrupt_labels(y_train)
+            corrupt_labels(y_test)
+            y_test = y_test.reshape(-1,1).astype(int)
+            classifer = learnknn(k, x_train, y_train)
+            preds = predictknn(classifer, x_test)
+
+            error = np.mean(y_test != preds)
+            k_errors.append(error)
+
+        average_errors.append(np.mean(k_errors))
+        print(f"Average error: {np.mean(np.mean(k_errors))}")
+
+
+    plt.plot(k_list, average_errors, marker='o')
+    plt.xlabel('K')  
+    plt.ylabel('Test Error Average')  
+
+    # Add a title
+    plt.title('Errors Plot With Corrupted Label')  
+    plt.grid(True) 
+    plt.show()
     
     
 
@@ -186,15 +289,9 @@ if __name__ == '__main__':
 
     # before submitting, make sure that the function simple_test runs without errors
     # simple_test()
-
-
-    # mytest()
-    # for i in range(5):
-
-    #     np.random.seed(i)
-
-    #     simple_test()
-
-    task2()
+    # exampe_test()
+    # task2a()
+    # task2d()
+    task2e()
 
 
