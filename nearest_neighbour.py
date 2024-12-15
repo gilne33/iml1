@@ -107,7 +107,7 @@ def exampe_test():
 def task2a():
     #hyperparameters (as per the task)
     k =1
-    sampel_sizes = [1,10,25,50,75,100]
+    sampel_sizes = [10,25,50,75,100]
 
     #data loading
     data = np.load('mnist_all.npz')
@@ -120,6 +120,8 @@ def task2a():
     test3 = data['test3']
     test5 = data['test5']
     test6 = data['test6']
+    test_size = len(test2) + len(test3) + len(test5) + len(test6)
+
 
     #lists for the plots
     average_errors = []
@@ -130,12 +132,15 @@ def task2a():
     for sampel_size in sampel_sizes:
         sampel_size_errors = []
 
-        print(f"sample size is {sampel_size}")
+        print(f"sample size is: {sampel_size}")
         for i in range(10):
 
             x_train, y_train = gensmallm([train2, train3, train5, train6], [2, 3, 5, 6], sampel_size)
 
-            x_test, y_test = gensmallm([test2, test3, test5, test6], [2, 3, 5, 6], sampel_size)
+            # x_test, y_test = gensmallm([test2, test3, test5, test6], [2, 3, 5, 6], sampel_size)
+
+            #no need to use shuffle for the test but it easier to use gensmallm with the size of all the test lists (more readable)
+            x_test, y_test = gensmallm([test2, test3, test5, test6], [2, 3, 5, 6], test_size)
             y_test = y_test.reshape(-1,1).astype(int)
 
             classifer = learnknn(k, x_train, y_train)
@@ -150,7 +155,7 @@ def task2a():
         max_error = np.max(sampel_size_errors)
         min_errors.append(min_error)
         max_errors.append(max_error)
-        print(f"Average error: {np.mean(sampel_size_errors)}, Min error: {min_error}, Max error: {max_error}")
+        print(f"Average error: {np.mean(sampel_size_errors)}, Min error: {min_error}, Max error: {max_error} , dif: {max_error- min_error}")
 
     plt.errorbar(
     sampel_sizes,
@@ -185,7 +190,7 @@ def task2d():
     test3 = data['test3']
     test5 = data['test5']
     test6 = data['test6']
-
+    test_size = len(test2) + len(test3) + len(test5) + len(test6)
     average_errors = []
 
     for k in k_list:
@@ -196,7 +201,10 @@ def task2d():
 
             x_train, y_train = gensmallm([train2, train3, train5, train6], [2, 3, 5, 6], sampel_size)
 
-            x_test, y_test = gensmallm([test2, test3, test5, test6], [2, 3, 5, 6], sampel_size)
+            # x_test, y_test = gensmallm([test2, test3, test5, test6], [2, 3, 5, 6], sampel_size)
+
+            #no need to use shuffle for the test but it easier to use gensmallm with the size of all the test lists (more readable)
+            x_test, y_test = gensmallm([test2, test3, test5, test6], [2, 3, 5, 6], test_size)
             y_test = y_test.reshape(-1,1).astype(int)
 
             classifer = learnknn(k, x_train, y_train)
@@ -247,6 +255,7 @@ def task2e():
     test3 = data['test3']
     test5 = data['test5']
     test6 = data['test6']
+    test_size = len(test2) + len(test3) + len(test5) + len(test6)
 
     average_errors = []
 
@@ -258,7 +267,10 @@ def task2e():
 
             x_train, y_train = gensmallm([train2, train3, train5, train6], [2, 3, 5, 6], sampel_size)
 
-            x_test, y_test = gensmallm([test2, test3, test5, test6], [2, 3, 5, 6], sampel_size)
+            # x_test, y_test = gensmallm([test2, test3, test5, test6], [2, 3, 5, 6], sampel_size)
+            
+            #no need to use shuffle for the test but it easier to use gensmallm with the size of all the test lists (more readable)
+            x_test, y_test = gensmallm([test2, test3, test5, test6], [2, 3, 5, 6], test_size)
 
             corrupt_labels(y_train)
             corrupt_labels(y_test)
@@ -291,7 +303,7 @@ if __name__ == '__main__':
     # simple_test()
     # exampe_test()
     # task2a()
-    # task2d()
-    task2e()
+    task2d()
+    # task2e()
 
 
